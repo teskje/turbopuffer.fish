@@ -1,0 +1,47 @@
+[tools]
+rust = { version = "latest", targets = "wasm32-unknown-unknown" }
+"github:rustwasm/wasm-bindgen" = "0.2.114"
+"github:WebAssembly/binaryen" = "latest"
+watchexec = "latest"
+
+[tasks.build]
+description = "Build WASM and generate JS bindings"
+run = """
+cargo build --target wasm32-unknown-unknown
+wasm-bindgen --target web \
+  ./target/wasm32-unknown-unknown/debug/turbopuffer_fish.wasm \
+  --out-dir ./www/pkg
+"""
+
+[tasks.build-release]
+description = "Build optimized WASM and generate JS bindings"
+run = """
+cargo build --release --target wasm32-unknown-unknown
+wasm-bindgen --target web \
+  ./target/wasm32-unknown-unknown/release/turbopuffer_fish.wasm \
+  --out-dir ./www/pkg
+wasm-opt -O3 ./www/pkg/turbopuffer_fish_bg.wasm -o ./www/pkg/turbopuffer_fish_bg.wasm
+"""
+
+[tasks.serve]
+description = "Serve the www directory"
+run = "python3 -m http.server 8080 -b 127.0.0.1 -d www"
+
+[tasks.lint]
+description = "Run clippy and check formatting"
+run = """
+cargo clippy --target wasm32-unknown-unknown -- -D warnings
+cargo fmt --check
+"""
+
+[tasks.dev]
+description = "Build, watch for changes, and serve"
+depends = ["build"]
+run = [
+  { tasks = ["dev:watch", "serve"] },
+]
+
+[tasks."dev:watch"]
+description = "Watch for source changes and rebuild"
+hide = true
+run = "mise watch build --watch src --watch www --glob '!www/pkg/**'"
