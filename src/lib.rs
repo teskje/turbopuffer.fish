@@ -13,8 +13,6 @@ use crate::canvas::Canvas;
 use crate::entity::Entity;
 use crate::puffer::Puffer;
 
-const PUFFER_COUNT: usize = 20;
-
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
@@ -53,8 +51,11 @@ impl Game {
 
         let canvas = Canvas::new(canvas_el)?;
 
+        let area = canvas.dim.x * canvas.dim.y;
+        let puffer_count = ((area / 50_000.0).round() as usize).clamp(5, 60);
+
         let mut entities = Vec::new();
-        for _ in 0..PUFFER_COUNT {
+        for _ in 0..puffer_count {
             let puffer = Puffer::new_random(canvas.dim);
             entities.push(Entity::Puffer(puffer));
         }
