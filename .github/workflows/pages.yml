@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
+        with:
+          cache: false
       - name: Build WASM
         run: mise run build-release
       - uses: actions/upload-pages-artifact@v3
